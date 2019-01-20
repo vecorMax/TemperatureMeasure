@@ -5,8 +5,9 @@
 # *******************************************************************************************************
 import asyncio
 import logging
+import json
 from nats.aio.client import Client as NATSClientLibrary
-from nats.aio.errors import ErrConnectionClosed, ErrTimeout, ErrNoServers
+from nats.aio.errors import ErrNoServers
 
 
 class CServiceMessaging:
@@ -44,7 +45,7 @@ class CServiceMessaging:
         if not self.__nc.is_connected:
             return
 
-        await self.__nc.publish("test", message.encode("UTF-8"))
+        await self.__nc.publish("TEMP", message.encode("UTF-8"))
 
     # ***************************************************************************************************
     # Завершение работы, закрытие соединения с сервером.                                                *
@@ -55,5 +56,7 @@ class CServiceMessaging:
         logging.info("Closing connection to NATS server.")
         await self.__nc.close()
         logging.info("Connection to NATS server closed.")
+
+
 
 

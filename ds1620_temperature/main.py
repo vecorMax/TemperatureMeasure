@@ -7,13 +7,15 @@ import traceback
 import sys
 import datetime
 import asyncio
+import json
+import uuid
+import hashlib
 # Импортируем библиотеку по работе с GPIO
 import RPi.GPIO as GPIO
 # Подключаем библиотечный файл для отправки сообщений.
 from smt.rpi.nats.messaging.CServiceMessaging import CServiceMessaging
 # Импортируем класс для работы с датчиком ds1620
 from drivers.ds1620driver import DS1620
-from fuzzy.controller import CFuzzyController
 
 
 async def cycle():
@@ -30,6 +32,9 @@ async def cycle():
     # Инициализация пинов для датчика температуры: rst, dq, clk
     t_sensor = DS1620(17, 18, 27)
 
+    # Частота измерения данных с датчика
+    delay = 5
+
     mode = 1
     while 1:
         if mode == 1:
@@ -41,7 +46,7 @@ async def cycle():
         temperature = t_sensor.get_temperature()
 
         # Отправляем сообщение о текущем режиме на сервер.
-        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
         if temperature is not None:
             s_temperature = "{:3.0f}".format(temperature)
@@ -49,9 +54,20 @@ async def cycle():
         else:
             message = f'{current_time} Не удалось прочитать значение с датчика'
         print(message)
-        await asyncio.ensure_future(messaging.send(message))
+        # Создаем объект JSON, для передачи UUID платы,
+        # объекта измерения, время измерения, mode, частота измерения и данные измерения
+        output = json.dumps(
+            {"UUID": str(uuid.uuid1()),
+             "Object Measure": "Temperature",
+             "Current Time": current_time,
+             "Mode": mode,
+             "Sleep": delay,
+             "Data": temperature
+             }
+        )
+        await asyncio.ensure_future(messaging.send(output))
 
-        await asyncio.sleep(5)
+        await asyncio.sleep(delay)
         mode = 1 - mode
 
 

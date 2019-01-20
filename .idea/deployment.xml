@@ -5,63 +5,7 @@
       <paths name="pi@192.168.1.103:22">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/pi" local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="pi@192.168.1.103:22 (1)">
-        <serverdata>
-          <mappings>
             <mapping deploy="/home/pi" local="$PROJECT_DIR$" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="pi@192.168.1.103:22 (10)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/home/pi" local="$PROJECT_DIR$" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="pi@192.168.1.103:22 (11)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/home/pi" local="$PROJECT_DIR$" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="pi@192.168.1.103:22 (2)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/" local="$PROJECT_DIR$" web="" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="pi@192.168.1.103:22 (3)">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="pi@192.168.1.103:22 (4)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/home/pi" local="$PROJECT_DIR$" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="pi@192.168.1.103:22 (6)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/home/pi" local="$PROJECT_DIR$" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="pi@192.168.1.103:22 (8)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/tmp/pycharm_project_202" local="$PROJECT_DIR$" />
           </mappings>
         </serverdata>
       </paths>
