@@ -9,7 +9,6 @@ import datetime
 import asyncio
 import json
 import uuid
-import hashlib
 # Импортируем библиотеку по работе с GPIO
 import RPi.GPIO as GPIO
 # Подключаем библиотечный файл для отправки сообщений.
@@ -19,6 +18,7 @@ from drivers.ds1620driver import DS1620
 
 
 async def cycle():
+    global delay
     print("Начало работы программы.")
     messaging = CServiceMessaging()
 
@@ -32,9 +32,6 @@ async def cycle():
     # Инициализация пинов для датчика температуры: rst, dq, clk
     t_sensor = DS1620(17, 18, 27)
 
-    # Частота измерения данных с датчика
-    delay = 5
-
     mode = 1
     while 1:
         if mode == 1:
@@ -45,6 +42,9 @@ async def cycle():
         # Считываем температуру
         temperature = t_sensor.get_temperature()
 
+        # Обновляем частоту опроса датчика, если пришло на сервер пришло соответствующее уведомление
+        delay = CServiceMessaging.change_delay(delay, 1)
+
         # Отправляем сообщение о текущем режиме на сервер.
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
@@ -54,27 +54,29 @@ async def cycle():
         else:
             message = f'{current_time} Не удалось прочитать значение с датчика'
         print(message)
+
         # Создаем объект JSON, для передачи UUID платы,
         # объекта измерения, время измерения, mode, частота измерения и данные измерения
         output = json.dumps(
             {"UUID": str(uuid.uuid1()),
-             "Object Measure": "Temperature",
-             "Current Time": current_time,
+             "ObjectMeasure": "Temperature",
+             "CurrentTime": current_time,
              "Mode": mode,
-             "Sleep": delay,
+             "Delay": delay,
              "Data": temperature
              }
         )
+
         await asyncio.ensure_future(messaging.send(output))
 
         await asyncio.sleep(delay)
+
         mode = 1 - mode
 
 
 async def main():
     try:
         await cycle()
-
     except KeyboardInterrupt:
         # Выход из программы по нажатию Ctrl+C
         print("Завершение работы Ctrl+C.")
@@ -91,4 +93,6 @@ async def main():
         print("Программа завершена.")
 
 if __name__ == '__main__':
+    # Частота измерения данных с датчика
+    delay = 5
     asyncio.run(main())
