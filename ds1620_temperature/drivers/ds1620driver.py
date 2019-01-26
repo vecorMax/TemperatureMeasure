@@ -71,10 +71,10 @@ class DS1620:
         GPIO.output(self._rst, GPIO.LOW)
         GPIO.output(self._clk, GPIO.HIGH)
         GPIO.output(self._rst, GPIO.HIGH)
-        self.__send_command(0x0c)  # Write config command.
+        self.__send_command(0x0c)  # Write configManager command.
         self.__send_command(0x02)  # CPU Mode.
         GPIO.output(self._rst, GPIO.LOW)
-        time.sleep(0.2)  # Wait until the config register is written.
+        time.sleep(0.2)  # Wait until the configManager register is written.
         GPIO.output(self._clk, GPIO.HIGH)
         GPIO.output(self._rst, GPIO.HIGH)
         self.__send_command(0xEE)  # Start conversion.

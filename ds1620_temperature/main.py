@@ -9,12 +9,15 @@ import datetime
 import asyncio
 import json
 import uuid
+import configparser
 # Импортируем библиотеку по работе с GPIO
 import RPi.GPIO as GPIO
 # Подключаем библиотечный файл для отправки сообщений.
 from smt.rpi.nats.messaging.CServiceMessaging import CServiceMessaging
 # Импортируем класс для работы с датчиком ds1620
 from drivers.ds1620driver import DS1620
+# Подключаем конфигурационны файл
+from configManager.CConfigManager import CConfigManager
 
 
 async def cycle():
@@ -31,6 +34,10 @@ async def cycle():
 
     # Инициализация пинов для датчика температуры: rst, dq, clk
     t_sensor = DS1620(17, 18, 27)
+
+    # Обновление параметров программы (частота опроса датчика)
+    # из конфигурационного файла
+    delay = CConfigManager.get_setting(path, 'Settings', 'timedelay')
 
     mode = 1
     while 1:
@@ -69,7 +76,8 @@ async def cycle():
 
         await asyncio.ensure_future(messaging.send(output))
 
-        await asyncio.sleep(delay)
+        delay_int = int(float(delay))
+        await asyncio.sleep(delay_int)
 
         mode = 1 - mode
 
@@ -95,4 +103,5 @@ async def main():
 if __name__ == '__main__':
     # Частота измерения данных с датчика
     delay = 5
+    path = "settings1.ini"
     asyncio.run(main())

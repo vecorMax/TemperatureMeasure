@@ -8,11 +8,13 @@ import logging
 import json
 from nats.aio.client import Client as NATSClientLibrary
 from nats.aio.errors import ErrNoServers
+# Подключаем конфигурационны файл
+from configManager.CConfigManager import CConfigManager
 
 
 class CServiceMessaging:
-    # Частота опроса дачтика температуры
-    delay = 5
+    # Путь к конфигурационным настройкам параметров системы
+    path = "settings1.ini"
 
     # ***************************************************************************************************
     # Конструктор объекта.                                                                              *
@@ -86,7 +88,7 @@ class CServiceMessaging:
     # ***************************************************************************************************
     def change_delay(param_delay, param_num):
         if param_num == 0:
-            CServiceMessaging.delay = param_delay
+            CConfigManager.update_setting(CServiceMessaging.path, "Settings", "timedelay", str(param_delay/2))
         if param_num == 1:
-            return CServiceMessaging.delay
+            return CConfigManager.get_setting(CServiceMessaging.path, "Settings", "timedelay")
 
