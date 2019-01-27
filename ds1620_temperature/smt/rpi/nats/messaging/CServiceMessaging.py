@@ -10,6 +10,8 @@ from nats.aio.client import Client as NATSClientLibrary
 from nats.aio.errors import ErrNoServers
 # Подключаем конфигурационны файл
 from configManager.CConfigManager import CConfigManager
+# Импортируем класс для работы с датчиком ds1620
+from drivers.ds1620driver import DS1620
 
 
 class CServiceMessaging:
@@ -39,6 +41,8 @@ class CServiceMessaging:
                 logging.info("Connection to NATS server established.")
                 await CServiceMessaging.receive(self)
                 logging.info("Created receiver messages from the server NATS")
+                await CServiceMessaging.refresh(self)
+                logging.info("Created receiver messages from the NATS for internal requests")
             except ErrNoServers as e:
                 logging.error("Cannot connect to NATS server.", e)
 
@@ -84,7 +88,7 @@ class CServiceMessaging:
         await self.__nc.subscribe("TEMP_FROM_DEVICE_TO_SERVER", cb=message_handler)
 
     # ***************************************************************************************************
-    # Изменение частоты опроса датчика                                                                  *
+    # Обновление частоты опроса датчика                                                                 *
     # ***************************************************************************************************
     def change_delay(param_delay, param_num):
         if param_num == 0:
@@ -92,3 +96,18 @@ class CServiceMessaging:
         if param_num == 1:
             return CConfigManager.get_setting(CServiceMessaging.path, "Settings", "timedelay")
 
+    # ***************************************************************************************************
+    # Обновление данных с датчика                                                               *
+    # ***************************************************************************************************
+    async def refresh(self):
+        if not self.__nc.is_connected:
+            return
+
+        async def message_handler(msg):
+            # Инициализация пинов для датчика температуры: rst, dq, clk
+            t_sensor = DS1620(17, 18, 27)
+            # Считываем температуру
+            temperature = t_sensor.get_temperature()
+            await self.__nc.publish(msg.reply, json.dumps({"ObjectMeasure": "Temperature", "Data": temperature}).encode())
+
+        await self.__nc.subscribe("TEMP_IN_DEVICE_FROM_SERVER_UPD", cb=message_handler)

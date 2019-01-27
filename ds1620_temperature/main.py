@@ -22,6 +22,7 @@ from configManager.CConfigManager import CConfigManager
 
 async def cycle():
     global delay
+    global t_sensor
     print("Начало работы программы.")
     messaging = CServiceMessaging()
 
@@ -32,12 +33,12 @@ async def cycle():
     GPIO.setup(pin_led, GPIO.OUT, initial=GPIO.HIGH)
     GPIO.setup(pin_switch, GPIO.OUT, initial=GPIO.HIGH)
 
-    # Инициализация пинов для датчика температуры: rst, dq, clk
-    t_sensor = DS1620(17, 18, 27)
-
     # Обновление параметров программы (частота опроса датчика)
     # из конфигурационного файла
     delay = CConfigManager.get_setting(path, 'Settings', 'timedelay')
+
+    # Инициализация old_temperature по умолчанию
+    old_temperature = 0.0
 
     mode = 1
     while 1:
@@ -74,12 +75,19 @@ async def cycle():
              }
         )
 
-        await asyncio.ensure_future(messaging.send(output))
+        # Отправка данных на сервер NATS
+        if old_temperature != temperature:
+            await asyncio.ensure_future(messaging.send(output))
 
+        # Остановка системы на частоту, заданную пользователем
         delay_int = int(float(delay))
         await asyncio.sleep(delay_int)
 
+        # Переключение модулей
         mode = 1 - mode
+
+        # Запоминаем предыдущее значение температуры
+        old_temperature = temperature
 
 
 async def main():
@@ -103,5 +111,8 @@ async def main():
 if __name__ == '__main__':
     # Частота измерения данных с датчика
     delay = 5
+    # Название конфигурационного файла
     path = "settings1.ini"
+    # Инициализация пинов для датчика температуры: rst, dq, clk
+    t_sensor = DS1620(17, 18, 27)
     asyncio.run(main())
